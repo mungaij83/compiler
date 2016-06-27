@@ -1,0 +1,188 @@
+//MiniJava
+/**
+Name: Njoroge John Mungai
+Reg No: C026-0718/2012
+@auther mungaij83@gmail.com
+*/
+%{
+	import java.io.*;
+%}
+%class MiniJavaParser
+%interface MiniJavaTokens
+%next nextToken()
+%get lexer.token
+%semantic Object:lexer.lexVal
+%token <String> t_class t_static t_public t_void t_main t_String t_extends t_return t_if t_else t_while length t_new SystemOutPrintln
+%token t_this
+//Braces
+%token <String> '[' ']' '{' '}' '(' ')' AND OR
+//Data types
+%token t_int t_boolean
+
+//Literals
+%token t_true t_false
+%token <String> STRING_LITERAL
+%token <String> IDENTIFIER
+%token <Integer> INTEGER_LITERAL
+//Mathematical expressions and their types
+%token <String> '+' '-' '/' '*' '<' '>' ',' '.' ';' '&'
+%left AND
+%left '<'
+%left '+' '-'
+%left '/' '*'
+%left '!'
+%nonassoc '.' '['
+
+//Symbols and their types
+/*
+%type <MainClass> MainClass
+%type <ClassDeclaration> ClassDecl
+%type <VariableDeclaration> VarDecl
+%type <Program> Goal
+%type <Identifier> Identifier
+%type <FormalParameterList> FormalList
+%type <VarType> Type
+*/
+//Starting of grammar
+%start Goal
+
+%%
+Goal: MainClass ClassDeclarations
+	;
+MainClass: t_public t_class Identifier '{' t_public t_static t_void t_main '(' t_String '[' ']' Identifier ')' '{' Statements '}' '}'
+	;
+//Implement * operation
+ClassDeclarations: ClassDecl CdRest
+	|
+	;
+//Handle reduce/reduce
+CdRest: ClassDeclarations
+	;
+ClassDecl: t_class Identifier ClassDeclarator
+	;
+ClassDeclarator:ClassBody
+	|t_extends Identifier ClassBody
+	;
+
+ClassBody: '{' VarDeclarations MethodDeclarations '}'
+	;
+VarDeclarations:VarDeclarations VarDecl 
+	|
+	;
+//Implement * operation on MethodDecl
+MethodDeclarations: MethodDecl  MethodDeclarations
+	|
+	;
+VarDecl:Type Identifier ';'
+	;
+MethodDecl: t_public Type Identifier '(' FormalList ')' '{' VarDeclarations Statements '}'
+	;
+
+FormalList: Type Identifier FormalRest
+	|
+	;
+FormalRest: ',' FormalList
+	|
+	;
+//Removed Identifier to remove shift reduce issue, will resolve later
+Type: t_int '[' ']'
+	|t_int
+	|t_boolean
+	|IDENTIFIER
+	;
+//Implement Statements*
+Statements: Statement  Statements
+	|
+	;
+
+Statement: '{' Statements '}'
+	|t_if '(' BooleanExpression ')' Statement t_else Statement
+	|t_while '(' BooleanExpression ')' Statement
+	|SystemOutPrintln '(' Exp ')' ';'
+	|t_return PrimaryExp ';'
+	|Identifier '=' PrimaryExp ';'
+	|Identifier '[' PrimaryExp ']' '=' PrimaryExp ';'
+	;
+Exp: BooleanExpression
+	|MathExpression
+	;
+
+PrimaryExp: t_true
+	|t_false
+	|INTEGER_LITERAL
+	|Identifier
+	|t_this 
+	|STRING_LITERAL
+	|t_new NewObject
+	|'!' PrimaryExp
+	|'(' Exp ')'
+	|PrimaryExp '[' ']'
+	|PrimaryExp '.' length
+	|PrimaryExp '.' Identifier '(' ExpList ')'
+	;
+BooleanExpression:PrimaryExp BeRest;
+
+BeRest: '<' PrimaryExp
+	|'>' PrimaryExp
+	|AND PrimaryExp
+	|
+	;
+MathExpression: PrimaryExp MeRest ;
+
+MeRest: '+' PrimaryExp
+	|'-' PrimaryExp
+	|'*' PrimaryExp
+	|'/' PrimaryExp
+	;
+NewObject:t_int '[' PrimaryExp ']'
+	|Identifier '(' ')'
+	;
+ExpList: PrimaryExp ExpRest
+	|
+	;
+ExpRest: ',' PrimaryExp
+	|',' PrimaryExp ExpRest
+	;
+Identifier: IDENTIFIER 
+	;
+%%
+int token;
+private static Lexer lexer;
+//Initialize the parser scanner
+MiniJavaParser(Lexer s)throws java.io.FileNotFoundException,java.io.IOException,Exception{
+	lexer=s;
+	lexer.yylex();
+}
+private int nextToken(){
+try{
+	token=lexer.yylex();
+	return token;
+}catch(Exception e){
+	yyerror("Error next token");
+}
+return 0;
+}
+private void yyerror(String msg){
+	System.out.println("EROR: "+msg+"\n"
+		+"at line"+lexer.line()+1+"\n"+
+		"at column"+lexer.column()+"\n"+
+		"with token <<"+lexer.lexVal+">>");
+	System.exit(1);
+}
+public static void main(String [] args){
+	if(args.length>0){
+		try{
+	Lexer s=new Lexer(new InputStreamReader(new FileInputStream(args[0])));
+	MiniJavaParser parser=new MiniJavaParser(s);
+	parser.parse();
+	}catch(java.io.FileNotFoundException e){
+		System.out.println("File could not be opened: \n\t"+e.getMessage());
+	}catch(java.io.IOException e){
+		System.out.println("Input error:\n\t"+e.getMessage());
+	}catch(Exception e){
+		System.out.println("There wa a problem parsing your file, make sure that the file exists and try again");
+	}
+	}else{
+		System.out.println("Required one positional argument for file");
+	}
+}

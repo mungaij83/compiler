@@ -1,0 +1,62 @@
+#ifndef GLOBALS_H
+#define GLOBALS_H
+/*
+ * Contains global variables
+ */
+#include <stdio.h>
+#include<stdlib.h>
+#include <ctype.h>
+#include<string.h>
+#ifndef TRUE
+    #define TRUE 1
+#endif
+#ifndef FALSE
+    #define FALSE 0
+#endif
+#define MAX_RESERVED_WORDS 10
+typedef enum{
+    ENDFILE,ERROR, //Book keeping tokens
+    IF,THEN,ELSE,END,REPEAT,UNTIL,READ,WRITE, FUNCTION,//Reserved words
+    ID,NUM, //multicharacter tokens
+    EQ,ASSIGN,LT,PLUS,MINUS,TIMES,OVER,LPAREN,RPAREN,STMT //Special symbols
+}TokenType;
+
+extern FILE *source;
+extern FILE *listing;
+extern FILE*code;
+
+//Syntax Tree
+typedef enum{StatementK,ExpressionK,FunctionK}NodeKind;
+typedef enum{IfK,RepeatK,AssignK,ReadK,WriteK,FunctionDefK}StatementKind;
+typedef enum{OpK,ConstK,IdK}ExpressionKind;
+//For type checking
+typedef enum{Void,Integer,Boolean}ExpressionType;
+#define MAX_CHILDREN 3
+typedef struct treeNode{
+    struct treeNode *child[MAX_CHILDREN];
+    struct treeNode* siblings;
+    int lineno;
+    NodeKind nodeKind;
+    union{
+        StatementKind stmt;
+        ExpressionKind expr;
+    } kind;
+    union{
+        TokenType op;
+        int val;
+        char *name;
+
+    }attr;
+    ExpressionType type;
+
+}TreeNode;
+//Controll variables
+
+extern int EchoSource;
+extern int TraceScan;
+extern int TraceParse;
+extern int TraceAnalysis;
+extern int TraceCode;
+extern int Error;
+extern int lineno;
+#endif // GLOBALS_H

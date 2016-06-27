@@ -1,0 +1,13 @@
+x:=56;
+z:=1000; {initialize z}
+x34r:=900; {test number letter ID names }
+{this is a comment}
+repeat
+y:=x*3; {Take x and multiply by three}
+x:=y; {Set next value of x}
+until z < x;
+
+function hello()
+
+
+end;

@@ -1,0 +1,12 @@
+To run the file:
+	----Create the lexical analyzer with (minijava.lex) with
+		jflex minijava.lex
+	This will produce the Lexer.java class which will be used to scan source file for tokens.
+	--Create the minijava parser ( minijava.jacc) with
+		jacc -vh minijava.jacc
+	--Compile MiniJavaParser.java with to  produce executable parser
+		javac MiniJavaParser.java
+	--Run the Hello world class with
+		java MiniJavaParser Test.java
+----DONE---
+	
